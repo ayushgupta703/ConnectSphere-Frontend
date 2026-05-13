@@ -78,8 +78,8 @@ const useUserProfile = (userId) => {
     return () => { cancelled = true; };
   }, [userId, currentUser]);
 
-  // Derived display name
-  const displayName = profile?.fullName || profile?.username || (userId ? `User ${String(userId).slice(0, 4)}` : 'Unknown');
+  // Derived display name: Prefer username over fullName for posts, comments, and notifications
+  const displayName = profile?.username || profile?.fullName || (userId ? `User ${String(userId).slice(0, 4)}` : 'Unknown');
 
   return {
     ...profile,

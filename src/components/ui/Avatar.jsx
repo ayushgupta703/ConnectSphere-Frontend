@@ -22,13 +22,13 @@ const Avatar = ({ src, name, size = "md", className = "" }) => {
 
   return (
     <div 
-      className={`${selectedSize} rounded-full overflow-hidden flex items-center justify-center font-bold text-white bg-[#16a34a] bg-gradient-to-tr from-[#22c55e] to-[#15803d] shadow-sm flex-shrink-0 ${className}`}
+      className={`${selectedSize} rounded-full overflow-hidden flex items-center justify-center font-bold text-white bg-dark-800 border border-white/10 bg-gradient-to-tr from-primary-600 to-primary-800 shadow-lg flex-shrink-0 transition-transform duration-300 hover:scale-105 hover:ring-2 hover:ring-primary-500/50 ${className}`}
     >
       {src ? (
         <AuthenticatedImage 
           url={src} 
           alt={name} 
-          className="h-full w-full object-cover" 
+          className="h-full w-full object-cover transition-transform duration-500 hover:scale-110" 
         />
       ) : (
         <span>{initials}</span>

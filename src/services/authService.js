@@ -29,6 +29,16 @@ export const authService = {
   deleteAccount: async () => {
     const response = await authApi.delete('/auth/me');
     return response.data;
+  },
+
+  getSuggestions: async (excludeIds = [], limit = 5) => {
+    const params = new URLSearchParams();
+    if (excludeIds.length > 0) {
+      params.append('excludeIds', excludeIds.join(','));
+    }
+    params.append('limit', limit);
+    const response = await authApi.get(`/auth/users/suggestions?${params.toString()}`);
+    return response.data;
   }
 };
 

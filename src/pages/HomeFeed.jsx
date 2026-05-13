@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { extractErrorMessage } from '../utils/apiUtils';
 import { postService } from '../services/postService';
 import { mediaService } from '../services/mediaService';
 import PostCard from '../components/post/PostCard';
+import PostSkeleton from '../components/post/PostSkeleton';
 import StoryBar from '../components/story/StoryBar';
 import Avatar from '../components/ui/Avatar';
 import useAuthStore from '../store/useAuthStore';
@@ -21,7 +23,6 @@ const HomeFeed = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [newPostContent, setNewPostContent] = useState('');
   const [visibility, setVisibility] = useState('PUBLIC');
   const [isPosting, setIsPosting] = useState(false);
@@ -138,7 +139,6 @@ const HomeFeed = () => {
       setVisibility('PUBLIC');
       setSelectedFiles([]);
       setPreviews([]);
-      setIsModalOpen(false);
 
     } catch (err) {
       console.error("Failed to create post:", err);
@@ -156,181 +156,148 @@ const HomeFeed = () => {
   return (
     <div className="w-full">
       {/* Header */}
-      <div className="sticky top-0 z-[60] bg-white/80 backdrop-blur-md border-b border-gray-100/50 px-6 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-black text-gray-900 tracking-tight">Home</h1>
-        <Button 
-          onClick={() => setIsModalOpen(true)}
-          className="rounded-full px-5 text-sm h-9 font-bold shadow-md hover:shadow-lg transition-all"
-        >
-          Create Post
-        </Button>
+      <div className="sticky top-0 z-[60] bg-dark-950/80 backdrop-blur-xl border-b border-white/5 px-6 py-4">
+        <h1 className="text-xl font-black text-gray-100 tracking-tight">Home</h1>
       </div>
 
       {/* Stories */}
       <StoryBar />
 
-      {/* Create Post Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl animate-in fade-in zoom-in duration-200">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">Create New Post</h2>
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X className="h-6 w-6 text-gray-500" />
-              </button>
-            </div>
+      {/* Inline Compose Box */}
+      <div className="px-4 sm:px-6 py-5 border-b border-white/5 bg-dark-950">
+        <div className="flex gap-4">
+          <Avatar
+            src={currentUser?.profilePicUrl}
+            name={currentUser?.fullName || currentUser?.username}
+            size="md"
+            className="shadow-md ring-2 ring-dark-900"
+          />
+          <div className="flex-1">
+            <textarea
+              className="w-full bg-transparent resize-none outline-none text-gray-100 placeholder:text-gray-600 text-lg min-h-[60px] pt-1"
+              placeholder="What's happening?"
+              value={newPostContent}
+              onChange={(e) => setNewPostContent(e.target.value)}
+            />
 
-            <div className="p-6">
-              <div className="flex gap-4">
-                <Avatar
-                  src={currentUser?.profilePicUrl}
-                  name={currentUser?.fullName || currentUser?.username}
-                  size="md"
-                />
-                <div className="flex-1">
-                  <textarea
-                    autoFocus
-                    className="w-full bg-transparent resize-none outline-none text-gray-900 placeholder:text-gray-500 text-lg min-h-[120px]"
-                    placeholder="What's happening?"
-                    value={newPostContent}
-                    onChange={(e) => setNewPostContent(e.target.value)}
-                  />
-
-                  {/* Visibility Selector */}
-                  <div className="relative mt-2 z-10">
+            {/* Media Previews */}
+            {previews.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2 max-h-[300px] overflow-y-auto pr-2 pb-2">
+                {previews.map((preview, index) => (
+                  <div key={index} className="relative h-32 w-32 sm:h-48 sm:w-48 rounded-2xl overflow-hidden border border-white/10 shadow-lg">
+                    {preview.type === 'video' ? (
+                      <video src={preview.url} className="h-full w-full object-cover" />
+                    ) : (
+                      <img src={preview.url} alt="preview" className="h-full w-full object-cover" />
+                    )}
                     <button
                       type="button"
-                      onClick={() => setShowVisibilityMenu(prev => !prev)}
-                      className="flex items-center gap-1.5 text-xs font-semibold text-primary-600 bg-primary-50 hover:bg-primary-100 px-3 py-1.5 rounded-full transition-colors border border-primary-200"
+                      onClick={() => removeFile(index)}
+                      className="absolute top-2 right-2 bg-black/60 backdrop-blur-md text-white rounded-full p-1.5 hover:bg-black/80 transition-colors"
                     >
-                      <SelectedIcon className="h-3.5 w-3.5" />
-                      {selectedOption?.label}
-                      <svg className="h-3 w-3 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <X className="h-4 w-4" />
                     </button>
-
-                    {showVisibilityMenu && (
-                      <div className="absolute left-0 top-full mt-1 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-[60]">
-                        {VISIBILITY_OPTIONS.map(({ value, label, icon: Icon, description }) => (
-                          <button
-                            key={value}
-                            type="button"
-                            onClick={() => { setVisibility(value); setShowVisibilityMenu(false); }}
-                            className={`w-full flex items-start gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors text-left ${visibility === value ? 'bg-primary-50' : ''}`}
-                          >
-                            <Icon className={`h-4 w-4 mt-0.5 flex-shrink-0 ${visibility === value ? 'text-primary-600' : 'text-gray-500'}`} />
-                            <div>
-                              <p className={`text-sm font-medium ${visibility === value ? 'text-primary-700' : 'text-gray-800'}`}>{label}</p>
-                              <p className="text-xs text-gray-500 leading-tight">{description}</p>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
                   </div>
+                ))}
+              </div>
+            )}
 
-                  {/* Media Previews */}
-                  {previews.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-2 max-h-[200px] overflow-y-auto p-1">
-                      {previews.map((preview, index) => (
-                        <div key={index} className="relative h-24 w-24 rounded-lg overflow-hidden border border-gray-200">
-                          {preview.type === 'video' ? (
-                            <video src={preview.url} className="h-full w-full object-cover" />
-                          ) : (
-                            <img src={preview.url} alt="preview" className="h-full w-full object-cover" />
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => removeFile(index)}
-                            className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 hover:bg-black/70 transition-colors"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
+            <div className="flex justify-between items-center mt-4 pt-4 border-t border-white/5">
+              <div className="flex items-center gap-2">
+                <input
+                  type="file"
+                  id="media-upload-inline"
+                  multiple
+                  accept="image/*,video/*"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                <label
+                  htmlFor="media-upload-inline"
+                  className="text-primary-500 hover:bg-primary-500/10 p-2 rounded-full transition-colors cursor-pointer flex items-center justify-center"
+                >
+                  <ImageIcon className="h-5 w-5" />
+                </label>
+
+                {/* Visibility Selector */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowVisibilityMenu(prev => !prev)}
+                    className="flex items-center gap-1.5 text-[13px] font-bold text-primary-400 hover:bg-primary-500/10 px-3 py-1.5 rounded-full transition-colors"
+                  >
+                    <SelectedIcon className="h-4 w-4" />
+                    <span className="hidden sm:inline">{selectedOption?.label}</span>
+                  </button>
+
+                  {showVisibilityMenu && (
+                    <div className="absolute left-0 top-full mt-2 w-56 bg-dark-900 rounded-2xl shadow-xl border border-white/10 py-1.5 z-[60]">
+                      {VISIBILITY_OPTIONS.map(({ value, label, icon: Icon, description }) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => { setVisibility(value); setShowVisibilityMenu(false); }}
+                          className={`w-full flex items-start gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors text-left ${visibility === value ? 'bg-primary-500/10' : ''}`}
+                        >
+                          <Icon className={`h-4 w-4 mt-0.5 flex-shrink-0 ${visibility === value ? 'text-primary-500' : 'text-gray-400'}`} />
+                          <div>
+                            <p className={`text-sm font-bold ${visibility === value ? 'text-primary-400' : 'text-gray-200'}`}>{label}</p>
+                            <p className="text-xs text-gray-500 leading-tight mt-0.5">{description}</p>
+                          </div>
+                        </button>
                       ))}
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
-                <div className="flex items-center gap-1">
-                  <input
-                    type="file"
-                    id="media-upload-modal"
-                    multiple
-                    accept="image/*,video/*"
-                    className="hidden"
-                    onChange={handleFileChange}
-                  />
-                  <label
-                    htmlFor="media-upload-modal"
-                    className="text-primary-500 hover:bg-primary-50 p-2 rounded-full transition-colors cursor-pointer"
-                  >
-                    <ImageIcon className="h-6 w-6" />
-                  </label>
-                </div>
-                <div className="flex gap-3">
-                  <Button
-                    variant="ghost"
-                    onClick={() => setIsModalOpen(false)}
-                    className="rounded-full px-6"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleCreatePost}
-                    disabled={(!newPostContent.trim() && selectedFiles.length === 0) || isPosting || isUploadingMedia}
-                    isLoading={isPosting || isUploadingMedia}
-                    className="rounded-full px-8"
-                  >
-                    {isUploadingMedia ? 'Uploading...' : 'Post'}
-                  </Button>
-                </div>
-              </div>
+              <Button
+                onClick={handleCreatePost}
+                disabled={(!newPostContent.trim() && selectedFiles.length === 0) || isPosting || isUploadingMedia}
+                isLoading={isPosting || isUploadingMedia}
+                className="rounded-full px-6 h-9 text-sm font-bold shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)]"
+              >
+                {isUploadingMedia ? 'Uploading...' : 'Post'}
+              </Button>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Feed Content */}
-      <div className="divide-y divide-gray-100">
+      <div className="flex flex-col p-0 sm:p-2">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 space-y-4">
-            <div className="h-10 w-10 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin" />
-            <p className="text-gray-500 font-medium">Curating your feed...</p>
+          <div className="space-y-2">
+            {[1, 2, 3].map(i => <PostSkeleton key={i} />)}
           </div>
         ) : error ? (
           <div className="py-12 px-6 text-center">
-            <p className="text-red-500 font-medium">{error}</p>
-            <button onClick={() => fetchFeed(0)} className="mt-4 px-6 py-2 bg-primary-50 text-primary-600 rounded-full font-bold hover:bg-primary-100 transition-all">
+            <p className="text-red-400 font-medium">{error}</p>
+            <button onClick={() => fetchFeed(0)} className="mt-4 px-6 py-2 bg-primary-500/10 text-primary-400 rounded-full font-bold hover:bg-primary-500/20 transition-all">
               Try Again
             </button>
           </div>
         ) : posts.length === 0 ? (
           <div className="text-center py-20 px-4 animate-in fade-in zoom-in duration-700">
-            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
-              <Plus className="h-10 w-10 text-gray-300" />
+            <div className="w-20 h-20 bg-dark-900 rounded-full flex items-center justify-center mx-auto mb-5 border border-white/5 shadow-inner">
+              <Plus className="h-10 w-10 text-gray-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900">Your feed is quiet</h3>
+            <h3 className="text-xl font-bold text-gray-100">Your feed is quiet</h3>
             <p className="text-gray-500 mt-2 max-w-xs mx-auto text-sm">Follow more people or create your first post to start the conversation!</p>
           </div>
         ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-both">
-            {posts.map((post, index) => (
-              <div 
-                key={post.id} 
-                className="animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <PostCard post={post} />
-              </div>
+          <motion.div 
+            initial="hidden"
+            animate="visible"
+            variants={{
+              visible: { transition: { staggerChildren: 0.1 } }
+            }}
+            className="flex flex-col gap-3"
+          >
+            {posts.map((post) => (
+              <PostCard key={post.id} post={post} />
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
     </div>

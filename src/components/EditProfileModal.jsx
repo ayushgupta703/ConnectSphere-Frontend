@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { X, Loader2 } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { X, Loader2, Trash2 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
-import { mediaService } from '../services/mediaService';
 import { authService } from '../services/authService';
 import useAuthStore from '../store/useAuthStore';
-import { Trash2 } from 'lucide-react';
-
 
 const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
   const { updateUser, logout } = useAuthStore();
@@ -28,13 +26,8 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
 
     try {
       const updatedUser = await authService.updateProfile(formData);
-      
-      // Update global auth store
       updateUser(updatedUser);
-      
-      // Update local profile state in Profile.jsx
       onUpdate(updatedUser);
-      
       onClose();
     } catch (err) {
       console.error("Failed to update profile", err);
@@ -65,29 +58,28 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
     }
   };
 
-
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in duration-200">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">Edit Profile</h2>
+  const modalContent = (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="glass-card bg-dark-900 border border-white/10 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in duration-200">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
+          <h2 className="text-xl font-bold text-gray-100">Edit Profile</h2>
           <button 
             onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-white/5 rounded-full transition-colors"
           >
-            <X className="h-6 w-6 text-gray-500" />
+            <X className="h-5 w-5 text-gray-400 hover:text-gray-200" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm font-medium border border-red-100">
+            <div className="bg-red-500/10 text-red-400 p-3 rounded-xl text-sm font-medium border border-red-500/20 text-center">
               {error}
             </div>
           )}
 
           <div className="space-y-1.5">
-            <label htmlFor="fullName" className="text-sm font-semibold text-gray-700 ml-1">
+            <label htmlFor="fullName" className="text-sm font-semibold text-gray-300 ml-1">
               Full Name
             </label>
             <Input
@@ -101,7 +93,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label htmlFor="username" className="text-sm font-semibold text-gray-700 ml-1">
+              <label htmlFor="username" className="text-sm font-semibold text-gray-300 ml-1">
                 Username
               </label>
               <Input
@@ -113,7 +105,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
               />
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="email" className="text-sm font-semibold text-gray-700 ml-1">
+              <label htmlFor="email" className="text-sm font-semibold text-gray-300 ml-1">
                 Email
               </label>
               <Input
@@ -128,12 +120,12 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="bio" className="text-sm font-semibold text-gray-700 ml-1">
+            <label htmlFor="bio" className="text-sm font-semibold text-gray-300 ml-1">
               Bio
             </label>
             <textarea
               id="bio"
-              className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all min-h-[100px] text-sm"
+              className="w-full bg-dark-950 border border-white/5 rounded-xl px-4 py-3 text-gray-100 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all min-h-[100px] text-sm shadow-inner"
               placeholder="Tell us about yourself..."
               value={formData.bio}
               onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
@@ -145,36 +137,37 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
               type="button"
               variant="secondary"
               onClick={onClose}
-              className="flex-1 rounded-xl"
+              className="flex-1 rounded-xl h-11 border border-white/5 hover:bg-white/5"
               disabled={loading}
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="flex-1 rounded-xl"
+              className="flex-1 rounded-xl h-11 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)]"
               isLoading={loading}
             >
               Save Changes
             </Button>
           </div>
 
-          <div className="pt-4 border-t border-gray-100">
+          <div className="pt-6 mt-6 border-t border-white/5">
             <button
               type="button"
               onClick={handleDeleteAccount}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-100"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all border border-transparent hover:border-red-500/20"
             >
               <Trash2 className="h-4 w-4" />
               Delete Account
             </button>
           </div>
         </form>
-
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export default EditProfileModal;

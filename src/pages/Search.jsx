@@ -10,16 +10,17 @@ import { Link } from 'react-router-dom';
 const UserResultItem = ({ user }) => (
   <Link 
     to={`/profile/${user.id}`}
-    className="flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors border-b border-gray-100"
+    className="flex items-center gap-4 p-4 hover:bg-white/5 transition-colors border-b border-white/5"
   >
     <Avatar 
       src={user.profilePicUrl} 
       name={user.fullName || user.username} 
       size="lg" 
+      className="shadow-lg ring-2 ring-dark-900"
     />
     <div className="flex-1">
-      <h3 className="font-semibold text-gray-900">{user.fullName || user.username}</h3>
-      <p className="text-sm text-gray-500">@{user.username?.toLowerCase()}</p>
+      <h3 className="font-bold text-gray-100 text-[15px]">{user.fullName || user.username}</h3>
+      <p className="text-[13px] text-primary-400 font-medium">@{user.username?.toLowerCase()}</p>
     </div>
   </Link>
 );
@@ -98,51 +99,57 @@ const Search = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-white">
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-100 p-4">
-        <form onSubmit={handleFormSubmit} className="relative">
+    <div className="w-full min-h-screen bg-dark-950">
+      <div className="sticky top-0 z-10 bg-dark-950/80 backdrop-blur-xl border-b border-white/5 p-4 sm:p-6">
+        <form onSubmit={handleFormSubmit} className="relative max-w-xl mx-auto">
           <Input 
             type="text"
             placeholder="Search @username, name, or #hashtags..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="pl-10"
+            className="pl-12 bg-dark-900 shadow-inner border-white/10 h-12 text-base rounded-full"
           />
-          <SearchIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+          <SearchIcon className="absolute left-4 top-3 h-6 w-6 text-gray-500" />
         </form>
       </div>
 
-      <div className="p-0">
-        {error && <div className="p-4 text-red-500">{error}</div>}
+      <div className="flex flex-col">
+        {error && <div className="p-4 text-red-400 text-center">{error}</div>}
         
         {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="animate-spin text-primary-500 h-8 w-8" />
+          <div className="flex justify-center py-20">
+            <Loader2 className="animate-spin text-primary-500 h-10 w-10" />
           </div>
         ) : results.length > 0 ? (
-          <div className="divide-y divide-gray-100">
-            <h2 className="font-semibold text-gray-900 my-4 px-4">
+          <div className="flex flex-col">
+            <h2 className="font-bold text-gray-100 my-4 px-6 tracking-tight">
               Search Results ({results.length})
             </h2>
-            {results.map((item) => (
-              item.type === 'user' ? (
-                <UserResultItem key={`user-${item.id}`} user={item} />
-              ) : (
-                <PostCard key={`post-${item.id}`} post={item} />
-              )
-            ))}
+            <div className="flex flex-col gap-1 px-2 sm:px-4">
+              {results.map((item) => (
+                item.type === 'user' ? (
+                  <UserResultItem key={`user-${item.id}`} user={item} />
+                ) : (
+                  <PostCard key={`post-${item.id}`} post={item} />
+                )
+              ))}
+            </div>
           </div>
         ) : query.trim() && !loading ? (
-          <div className="py-16 text-center text-gray-500">
-            <SearchIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-            <p className="text-lg font-medium">No results found</p>
-            <p className="text-sm mt-1">Try a different @username, name or #hashtag</p>
+          <div className="py-20 text-center text-gray-500 animate-in fade-in zoom-in duration-500">
+            <div className="w-20 h-20 bg-dark-900 rounded-full flex items-center justify-center mx-auto mb-5 border border-white/5 shadow-inner">
+              <SearchIcon className="h-10 w-10 text-gray-600" />
+            </div>
+            <p className="text-xl font-bold text-gray-100">No results found</p>
+            <p className="text-sm mt-2 text-gray-500">Try a different @username, name or #hashtag</p>
           </div>
         ) : (
-          <div className="p-8 text-center text-gray-400">
-            <SearchIcon className="h-16 w-16 mx-auto mb-4 opacity-20" />
-            <p className="text-lg font-medium">Search for people or hashtags</p>
-            <p className="text-sm">Start typing to see results</p>
+          <div className="py-20 text-center text-gray-500 animate-in fade-in zoom-in duration-500">
+            <div className="w-24 h-24 bg-dark-900/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/5 shadow-inner">
+              <SearchIcon className="h-12 w-12 text-gray-600/50" />
+            </div>
+            <p className="text-xl font-bold text-gray-100">Search for people or hashtags</p>
+            <p className="text-sm mt-2 text-gray-500">Start typing to see results</p>
           </div>
         )}
       </div>

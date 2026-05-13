@@ -15,8 +15,12 @@ export const commentService = {
     return extractList(response.data);
   },
   
-  addComment: async (postId, content) => {
-    const response = await commentApi.post(`/comments/${postId}`, { content });
+  addComment: async (postId, content, parentCommentId = null) => {
+    const payload = { content };
+    if (parentCommentId) {
+      payload.parentCommentId = parentCommentId;
+    }
+    const response = await commentApi.post(`/comments/${postId}`, payload);
     return response.data;
   },
   

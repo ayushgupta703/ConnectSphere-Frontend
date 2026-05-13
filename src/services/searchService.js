@@ -29,5 +29,15 @@ export const searchService = {
       return [];
     }
   },
+
+  getTrendingHashtags: async (limit = 5) => {
+    try {
+      const response = await searchApi.get(`/hashtags/trending?limit=${limit}`);
+      return response.data; // This endpoint returns a direct list based on my controller review
+    } catch (err) {
+      console.error("Failed to fetch trending hashtags", err);
+      return [];
+    }
+  }
 };
 

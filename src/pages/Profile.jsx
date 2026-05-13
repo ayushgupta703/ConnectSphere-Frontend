@@ -115,10 +115,12 @@ const Profile = () => {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full min-h-screen bg-dark-950">
       {/* Profile Header */}
-      <div className="bg-white border-b border-gray-100 p-6 sm:p-8">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+      <div className="bg-dark-900 border-b border-white/5 p-6 sm:p-10 relative overflow-hidden">
+        {/* Abstract Background Gradient */}
+        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-primary-500/10 to-transparent pointer-events-none" />
+        <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-6">
           <div className="relative group">
             <Avatar 
               src={profile?.profilePicUrl} 
@@ -138,7 +140,7 @@ const Profile = () => {
                 />
                 <label 
                   htmlFor="profile-pic-upload"
-                  className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"
+                  className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-all duration-300"
                 >
                   {isUploadingPic ? <Loader2 className="h-8 w-8 text-white animate-spin" /> : <Camera className="h-8 w-8 text-white" />}
                 </label>
@@ -147,24 +149,24 @@ const Profile = () => {
           </div>
           <div className="flex-1 text-center sm:text-left">
             {/* Line 93: Full name (bold heading) */}
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl sm:text-3xl font-black text-gray-100 tracking-tight">
               {profile?.fullName || profile?.username || 'Unknown User'}
             </h1>
             {/* Line 94: @username handle */}
-            <p className="text-gray-500 mt-1">@{profile?.username?.toLowerCase()}</p>
+            <p className="text-primary-400 font-medium mt-1">@{profile?.username?.toLowerCase()}</p>
 
             {profile?.bio && (
-              <p className="mt-3 text-gray-700 text-sm leading-relaxed italic max-w-md">
+              <p className="mt-3 text-gray-300 text-[15px] leading-relaxed max-w-md mx-auto sm:mx-0">
                 {profile.bio}
               </p>
             )}
 
-            <div className="flex items-center justify-center sm:justify-start gap-6 mt-4 text-sm text-gray-600">
-              <div className="flex items-center gap-1 cursor-pointer hover:text-primary-600 transition-colors">
-                <span className="font-semibold text-gray-900">{followingCount}</span> Following
+            <div className="flex items-center justify-center sm:justify-start gap-6 mt-5 text-sm text-gray-400">
+              <div className="flex items-center gap-1.5 cursor-pointer hover:text-gray-200 transition-colors">
+                <span className="font-bold text-gray-100">{followingCount}</span> Following
               </div>
-              <div className="flex items-center gap-1 cursor-pointer hover:text-primary-600 transition-colors">
-                <span className="font-semibold text-gray-900">{followersCount}</span> Followers
+              <div className="flex items-center gap-1.5 cursor-pointer hover:text-gray-200 transition-colors">
+                <span className="font-bold text-gray-100">{followersCount}</span> Followers
               </div>
             </div>
           </div>
@@ -195,10 +197,14 @@ const Profile = () => {
       </div>
 
       {/* User Posts */}
-      <div className="divide-y divide-gray-100">
+      <div className="flex flex-col gap-3 p-0 sm:p-4 bg-dark-950 mt-2">
         {!Array.isArray(posts) || posts.length === 0 ? (
-          <div className="py-12 text-center text-gray-500">
-            No posts yet.
+          <div className="py-20 text-center text-gray-500 animate-in fade-in zoom-in duration-500">
+            <div className="w-20 h-20 bg-dark-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/5 shadow-inner">
+              <Camera className="h-8 w-8 text-gray-600" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-200">No posts yet</h3>
+            <p className="text-sm text-gray-500 mt-1">When they post, it will show up here.</p>
           </div>
         ) : (
           posts.map(post => <PostCard key={post.id} post={post} />)

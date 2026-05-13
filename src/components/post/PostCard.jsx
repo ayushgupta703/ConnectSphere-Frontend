@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Send, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Heart, MessageCircle, MoreHorizontal, Send, Loader2, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { likeService } from '../../services/likeService';
 import { commentService } from '../../services/commentService';
@@ -7,6 +8,7 @@ import { Button } from '../ui/Button';
 import FollowButton from '../ui/FollowButton';
 import Avatar from '../ui/Avatar';
 import AuthenticatedImage from '../ui/AuthenticatedImage';
+import Skeleton from '../ui/Skeleton';
 import { getFullUrl } from '../../utils/urlUtils';
 import useUserProfile from '../../hooks/useUserProfile';
 import useAuthStore from '../../store/useAuthStore';
@@ -14,19 +16,58 @@ import { postService } from '../../services/postService';
 import { Trash2 } from 'lucide-react';
 
 
-const CommentItem = ({ comment }) => {
+const CommentItem = ({ comment, isReply = false, onReplyClick, onToggleReplies }) => {
   const { displayName, profilePicUrl } = useUserProfile(comment.userId);
   return (
-    <div className="flex gap-2">
-      <Avatar src={profilePicUrl} name={displayName} size="sm" />
-      <div className="bg-gray-100 rounded-2xl rounded-tl-sm px-4 py-2 flex-1">
-        <div className="flex justify-between items-baseline mb-1">
-          <span className="text-sm font-medium text-gray-900">{displayName}</span>
-          <span className="text-xs text-gray-500">
-            {comment.createdAt ? formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true }) : 'now'}
-          </span>
+    <div className={`flex gap-2 ${isReply ? 'ml-8 mt-2' : 'mt-3'}`}>
+      <Avatar src={profilePicUrl} name={displayName} size={isReply ? "xs" : "sm"} />
+      <div className="flex-1">
+        <div className="bg-white/[0.03] border border-white/5 rounded-2xl rounded-tl-sm px-4 py-2.5 backdrop-blur-md shadow-sm">
+          <div className="flex justify-between items-baseline mb-1">
+            <span className="text-[13px] font-bold text-gray-200 tracking-wide">{displayName}</span>
+            <span className="text-[11px] text-gray-500 font-medium">
+              {comment.createdAt ? formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true }) : 'now'}
+            </span>
+          </div>
+          <p className="text-[14px] text-gray-300 leading-relaxed">{comment.content}</p>
         </div>
-        <p className="text-sm text-gray-800">{comment.content}</p>
+        
+        {/* Actions under the comment bubble */}
+        <div className="flex items-center gap-4 mt-1 ml-2">
+          {!isReply && (
+            <button 
+              onClick={() => onReplyClick(comment, displayName)}
+              className="text-[12px] text-gray-500 hover:text-gray-300 font-semibold transition-colors"
+            >
+              Reply
+            </button>
+          )}
+          
+          {!isReply && comment.repliesCount > 0 && (
+            <button 
+              onClick={() => onToggleReplies(comment.id)}
+              className="text-[12px] text-primary-500 hover:text-primary-400 font-semibold flex items-center gap-1.5 transition-colors"
+            >
+              {comment.loadingReplies && <Loader2 className="h-3 w-3 animate-spin" />}
+              {comment.showReplies ? 'Hide replies' : `View ${comment.repliesCount} repl${comment.repliesCount === 1 ? 'y' : 'ies'}`}
+            </button>
+          )}
+        </div>
+
+        {/* Nested Replies */}
+        {!isReply && comment.showReplies && comment.replies && comment.replies.length > 0 && (
+          <div className="mt-2">
+            {comment.replies.map(reply => (
+              <CommentItem 
+                key={reply.id} 
+                comment={reply} 
+                isReply={true} 
+                onReplyClick={onReplyClick} 
+                onToggleReplies={onToggleReplies}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -89,13 +130,13 @@ const FeedVideo = ({ url }) => {
           e.stopPropagation();
           setIsMuted(!isMuted);
         }}
-        className="absolute bottom-2 right-2 bg-black/50 text-white p-2 rounded-full z-10 transition-colors hover:bg-black/70"
+        className="absolute bottom-3 right-3 bg-black/40 backdrop-blur-md border border-white/10 text-white p-2.5 rounded-full z-10 transition-all hover:bg-black/60 shadow-lg"
       >
         {isMuted ? "🔇" : "🔊"}
       </button>
 
       {/* ⏱ Duration Left */}
-      <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded z-10">
+      <div className="absolute top-3 right-3 bg-black/40 backdrop-blur-md border border-white/10 text-white text-[10px] font-bold px-3 py-1.5 rounded-full z-10 shadow-lg tracking-wider">
         {formatTime(duration - currentTime)}
       </div>
     </div>
@@ -118,6 +159,7 @@ const PostCard = ({ post }) => {
   const [newComment, setNewComment] = useState('');
   const [isCommenting, setIsCommenting] = useState(false);
   const [commentsCount, setCommentsCount] = useState(post?.commentsCount || 0);
+  const [replyingTo, setReplyingTo] = useState(null); // { id, displayName }
 
   // Carousel state
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
@@ -176,7 +218,13 @@ const PostCard = ({ post }) => {
         // commentService.getComments always returns a plain array
         // (extracts .content from the paginated Page<> response)
         const data = await commentService.getComments(post.id);
-        setComments(Array.isArray(data) ? data : []);
+        const commentsWithState = (Array.isArray(data) ? data : []).map(c => ({
+          ...c,
+          replies: [],
+          showReplies: false,
+          loadingReplies: false
+        }));
+        setComments(commentsWithState);
       } catch (err) {
         console.error('Failed to load comments', err);
         setComments([]);
@@ -187,15 +235,60 @@ const PostCard = ({ post }) => {
     setShowComments(!showComments);
   };
 
+  const handleReplyClick = (comment, displayName) => {
+    setReplyingTo({ id: comment.id, displayName });
+    // Focus logic could be added here if we had a ref to the input
+  };
+
+  const handleToggleReplies = async (commentId) => {
+    const comment = comments.find(c => c.id === commentId);
+    if (!comment) return;
+
+    if (!comment.showReplies && comment.replies.length === 0 && comment.repliesCount > 0) {
+      setComments(prev => prev.map(c => c.id === commentId ? { ...c, loadingReplies: true } : c));
+      try {
+        const repliesData = await commentService.getReplies(commentId);
+        setComments(prev => prev.map(c => 
+          c.id === commentId ? { ...c, replies: repliesData, showReplies: true, loadingReplies: false } : c
+        ));
+      } catch(err) {
+        console.error('Failed to load replies', err);
+        setComments(prev => prev.map(c => c.id === commentId ? { ...c, loadingReplies: false } : c));
+      }
+    } else {
+      setComments(prev => prev.map(c => 
+        c.id === commentId ? { ...c, showReplies: !c.showReplies } : c
+      ));
+    }
+  };
+
   const handleAddComment = async (e) => {
     e.preventDefault();
     if (!newComment.trim() || isCommenting) return;
 
     setIsCommenting(true);
     try {
-      const addedComment = await commentService.addComment(post.id, newComment);
-      setComments(prev => [...prev, addedComment]);
-      setCommentsCount(prev => prev + 1);
+      if (replyingTo) {
+        const addedReply = await commentService.addComment(post.id, newComment, replyingTo.id);
+        
+        setComments(prev => prev.map(c => {
+          if (c.id === replyingTo.id) {
+            return {
+              ...c,
+              repliesCount: (c.repliesCount || 0) + 1,
+              replies: [...(c.replies || []), addedReply],
+              showReplies: true
+            };
+          }
+          return c;
+        }));
+        setCommentsCount(prev => prev + 1);
+        setReplyingTo(null);
+      } else {
+        const addedComment = await commentService.addComment(post.id, newComment);
+        setComments(prev => [...prev, { ...addedComment, replies: [], showReplies: false, loadingReplies: false }]);
+        setCommentsCount(prev => prev + 1);
+      }
       setNewComment('');
     } catch (err) {
       console.error("Failed to add comment", err);
@@ -205,36 +298,48 @@ const PostCard = ({ post }) => {
   };
 
   return (
-    <article className="border-b border-gray-100 p-4 sm:p-6 hover:bg-gray-50/50 transition-colors">
+    <motion.article 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      className="border-b border-white/5 p-5 sm:p-7 hover:bg-white/[0.02] transition-all duration-500 group/post"
+    >
       <div className="flex items-start justify-between">
-        <div className="flex items-center space-x-3">
-          <Avatar src={profilePicUrl} name={displayName} size="md" />
+        <div className="flex items-center space-x-3.5">
+          <Avatar src={profilePicUrl} name={displayName} size="md" className="ring-2 ring-dark-900 shadow-xl" />
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-gray-900 leading-tight">
+              <h3 className="font-bold text-gray-100 tracking-tight text-[15px]">
                 {displayName}
               </h3>
               <FollowButton userId={post.userId} />
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-[12px] text-gray-500 font-medium tracking-wide">
               {post.createdAt ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true }) : 'Just now'}
             </p>
           </div>
         </div>
         <div className="relative group">
           <button 
-            className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+            className="text-gray-500 hover:text-gray-300 p-2 rounded-full hover:bg-white/5 transition-all duration-300"
             onClick={() => isOwner && setShowDeleteConfirm(!showDeleteConfirm)}
           >
             <MoreHorizontal className="h-5 w-5" />
           </button>
           
+          <AnimatePresence>
           {showDeleteConfirm && isOwner && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="absolute right-0 mt-2 w-48 bg-dark-800 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-white/10 py-1.5 z-50 overflow-hidden"
+            >
               <button
                 onClick={handleDeletePost}
                 disabled={isDeleting}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-400 hover:bg-red-500/10 transition-colors"
               >
                 {isDeleting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -243,18 +348,19 @@ const PostCard = ({ post }) => {
                 )}
                 {isDeleting ? 'Deleting...' : 'Delete Post'}
               </button>
-            </div>
+            </motion.div>
           )}
+          </AnimatePresence>
         </div>
       </div>
 
 
       <div className="mt-4">
-        <p className="text-gray-800 whitespace-pre-wrap">{post.content}</p>
+        <p className="text-gray-200 whitespace-pre-wrap leading-relaxed text-[15px] tracking-tight">{post.content}</p>
 
         {/* Media Carousel */}
         {mediaItems.length > 0 && (
-          <div className="mt-3 relative group rounded-xl overflow-hidden bg-gray-900 border border-gray-100 shadow-sm">
+          <div className="mt-4 relative group rounded-[2rem] overflow-hidden bg-dark-950 border border-white/5 shadow-2xl transition-transform duration-500 hover:scale-[1.005]">
             {/* Media Items */}
             <div
               className="flex transition-transform duration-300 ease-out h-full"
@@ -328,39 +434,62 @@ const PostCard = ({ post }) => {
         )}
       </div>
 
-      <div className="mt-4 flex items-center space-x-6 text-gray-500">
+      <div className="mt-5 flex items-center space-x-8 text-gray-500">
         <button
           onClick={handleLike}
           disabled={isLiking}
-          className={`flex items-center space-x-2 transition-colors ${isLiked ? 'text-red-500' : 'hover:text-red-500'
+          className={`flex items-center space-x-2 transition-all duration-300 group ${isLiked ? 'text-red-500' : 'hover:text-red-400'
             }`}
         >
-          <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
-          <span className="text-sm font-medium">{likesCount}</span>
+          <motion.div 
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="p-2 rounded-full group-hover:bg-red-500/10 transition-colors"
+          >
+            <Heart className={`h-5 w-5 ${isLiked ? 'fill-current scale-110 shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'group-hover:scale-110 transition-transform'}`} />
+          </motion.div>
+          <span className="text-[13px] font-bold tracking-tight">{likesCount}</span>
         </button>
 
         <button
           onClick={toggleComments}
-          className={`flex items-center space-x-2 transition-colors ${showComments ? 'text-primary-600' : 'hover:text-primary-600'
+          className={`flex items-center space-x-2 transition-all duration-300 group ${showComments ? 'text-primary-500' : 'hover:text-primary-400'
             }`}
         >
-          <MessageCircle className={`h-5 w-5 ${showComments ? 'fill-current opacity-20' : ''}`} />
-          <span className="text-sm font-medium">{commentsCount}</span>
+          <div className="p-2 rounded-full group-hover:bg-primary-500/10 transition-colors">
+            <MessageCircle className={`h-5 w-5 ${showComments ? 'fill-current opacity-20' : 'group-hover:scale-110 transition-transform'}`} />
+          </div>
+          <span className="text-[13px] font-bold">{commentsCount}</span>
         </button>
 
-        <button className="flex items-center space-x-2 hover:text-green-600 transition-colors">
-          <Share2 className="h-5 w-5" />
-        </button>
+
       </div>
 
       {/* Comments Section */}
       {showComments && (
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <form onSubmit={handleAddComment} className="flex gap-2 mb-4">
+        <motion.div 
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="mt-4 pt-4 border-t border-white/5"
+        >
+          
+          {replyingTo && (
+            <div className="flex items-center justify-between bg-white/5 backdrop-blur-md text-[13px] text-gray-300 px-4 py-2 rounded-t-xl border-b border-white/10 mb-[-4px] z-10 relative">
+              <span>Replying to <span className="font-bold text-gray-100">{replyingTo.displayName}</span></span>
+              <button 
+                onClick={() => setReplyingTo(null)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+          
+          <form onSubmit={handleAddComment} className="flex gap-2 mb-6 relative z-20">
             <input
               type="text"
-              placeholder="Write a comment..."
-              className="flex-1 bg-gray-100 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder={replyingTo ? "Write a reply..." : "Write a comment..."}
+              className={`flex-1 bg-dark-900 border border-white/10 px-5 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-dark-800 transition-all shadow-inner ${replyingTo ? 'rounded-b-2xl rounded-t-none' : 'rounded-full'}`}
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               disabled={isCommenting}
@@ -368,26 +497,40 @@ const PostCard = ({ post }) => {
             <button
               type="submit"
               disabled={!newComment.trim() || isCommenting}
-              className="p-2 rounded-full text-primary-600 hover:bg-primary-50 disabled:opacity-50 transition-colors"
+              className="p-3 rounded-full text-white bg-primary-600 hover:bg-primary-500 disabled:opacity-50 disabled:bg-dark-800 disabled:text-gray-500 transition-all self-end shadow-[0_4px_15px_rgba(16,185,129,0.3)] disabled:shadow-none"
             >
               {isCommenting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
             </button>
           </form>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {commentsLoading ? (
-              <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-gray-400" /></div>
+              <div className="space-y-4 py-4">
+                {[1, 2].map(i => (
+                  <div key={i} className="flex gap-3">
+                    <Skeleton className="h-8 w-8" variant="circle" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-10 w-full rounded-2xl" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : !Array.isArray(comments) || comments.length === 0 ? (
               <p className="text-sm text-gray-500 text-center py-2">No comments yet. Be the first!</p>
             ) : (
               comments.map(comment => (
-                <CommentItem key={comment.id} comment={comment} />
+                <CommentItem 
+                  key={comment.id} 
+                  comment={comment} 
+                  onReplyClick={handleReplyClick}
+                  onToggleReplies={handleToggleReplies}
+                />
               ))
             )}
           </div>
-        </div>
+        </motion.div>
       )}
-    </article>
+    </motion.article>
   );
 };
 

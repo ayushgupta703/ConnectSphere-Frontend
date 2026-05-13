@@ -32,7 +32,7 @@ const StoryGroup = ({ group, onClick }) => {
       onClick={onClick}
       className="flex flex-col items-center gap-1 min-w-[72px]"
     >
-      <div className={`h-16 w-16 rounded-full border-2 p-0.5 flex items-center justify-center transition-colors ${isViewed ? 'border-gray-200' : 'border-primary-500'
+      <div className={`h-16 w-16 rounded-full border-2 p-0.5 flex items-center justify-center transition-all ${isViewed ? 'border-white/20' : 'border-primary-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]'
         }`}>
         <Avatar
           src={profilePic}
@@ -42,7 +42,7 @@ const StoryGroup = ({ group, onClick }) => {
         />
       </div>
 
-      <span className="text-[11px] font-medium text-gray-700 truncate w-16">
+      <span className="text-[11px] font-bold text-gray-300 truncate w-16 text-center tracking-wide mt-1">
         {nameToDisplay}
       </span>
     </button>
@@ -369,7 +369,7 @@ const StoryBar = () => {
 
   if (loading && stories.length === 0) return null;
 
-  return (<div className="bg-white border-b border-gray-100 py-4"> <div className="flex gap-4 px-4 overflow-x-auto no-scrollbar items-center">
+  return (<div className="bg-dark-950 border-b border-white/5 py-4"> <div className="flex gap-4 px-4 sm:px-6 overflow-x-auto no-scrollbar items-center">
 
     {/* Your Story (Unified View/Create) */}
     <div className="flex flex-col items-center gap-1 min-w-[72px]">
@@ -394,8 +394,8 @@ const StoryBar = () => {
             }
           }}
           className={`h-16 w-16 rounded-full border-2 p-0.5 cursor-pointer flex items-center justify-center transition-all ${currentUserGroup
-              ? (isCurrentUserViewed ? 'border-gray-200' : 'border-primary-500')
-              : 'border-gray-200 grayscale-[0.5] hover:grayscale-0'
+              ? (isCurrentUserViewed ? 'border-white/20' : 'border-primary-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]')
+              : 'border-white/20 grayscale-[0.5] hover:grayscale-0 hover:border-primary-500 hover:shadow-[0_0_10px_rgba(16,185,129,0.5)]'
             }`}
         >
           <Avatar
@@ -418,7 +418,7 @@ const StoryBar = () => {
           )}
         </label>
       </div>
-      <span className="text-[11px] font-medium text-gray-500 truncate w-16 text-center">
+      <span className="text-[11px] font-bold text-gray-400 truncate w-16 text-center tracking-wide mt-1">
         {currentUser?.username || 'You'}
       </span>
     </div>
