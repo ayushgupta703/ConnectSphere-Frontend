@@ -207,7 +207,7 @@ const Profile = () => {
             <p className="text-sm text-gray-500 mt-1">When they post, it will show up here.</p>
           </div>
         ) : (
-          posts.map(post => <PostCard key={post.id} post={post} />)
+          posts.map(post => <PostCard key={post.id} post={post} showVisibility={isOwnProfile} />)
         )}
       </div>
 

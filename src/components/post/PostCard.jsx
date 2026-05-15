@@ -13,7 +13,7 @@ import { getFullUrl } from '../../utils/urlUtils';
 import useUserProfile from '../../hooks/useUserProfile';
 import useAuthStore from '../../store/useAuthStore';
 import { postService } from '../../services/postService';
-import { Trash2 } from 'lucide-react';
+import { Globe, Lock, Users, Trash2 } from 'lucide-react';
 
 
 const CommentItem = ({ comment, isReply = false, onReplyClick, onToggleReplies }) => {
@@ -143,7 +143,7 @@ const FeedVideo = ({ url }) => {
   );
 };
 
-const PostCard = ({ post }) => {
+const PostCard = ({ post, showVisibility = false }) => {
   // Resolve userId → real username and profile pic.
   // Own posts: instant (from auth store). Others: fetched + cached from auth-service.
   const { displayName, profilePicUrl } = useUserProfile(post?.userId);
@@ -315,8 +315,19 @@ const PostCard = ({ post }) => {
               </h3>
               <FollowButton userId={post.userId} />
             </div>
-            <p className="text-[12px] text-gray-500 font-medium tracking-wide">
+            <p className="text-[12px] text-gray-500 font-medium tracking-wide flex items-center gap-2">
               {post.createdAt ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true }) : 'Just now'}
+              {showVisibility && post.visibility && (
+                <>
+                  <span className="opacity-30">•</span>
+                  <span className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-primary-500/80 font-bold bg-primary-500/5 px-2 py-0.5 rounded-full border border-primary-500/10">
+                    {post.visibility === 'PUBLIC' && <Globe className="h-2.5 w-2.5" />}
+                    {post.visibility === 'FOLLOWERS_ONLY' && <Users className="h-2.5 w-2.5" />}
+                    {post.visibility === 'PRIVATE' && <Lock className="h-2.5 w-2.5" />}
+                    {post.visibility.replace('_', ' ')}
+                  </span>
+                </>
+              )}
             </p>
           </div>
         </div>

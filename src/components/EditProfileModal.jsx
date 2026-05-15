@@ -84,7 +84,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
             </label>
             <Input
               id="fullName"
-              placeholder="Your full name"
+              placeholder="Enter your full name"
               value={formData.fullName}
               onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
               required
@@ -98,7 +98,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
               </label>
               <Input
                 id="username"
-                placeholder="username"
+                placeholder="Enter your username"
                 value={formData.username}
                 onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
                 required
@@ -111,7 +111,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
               <Input
                 id="email"
                 type="email"
-                placeholder="email@example.com"
+                placeholder="Enter your email address"
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                 required
