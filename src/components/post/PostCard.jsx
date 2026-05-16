@@ -303,7 +303,7 @@ const PostCard = ({ post, showVisibility = false }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="border-b border-white/5 p-5 sm:p-7 hover:bg-white/[0.02] transition-all duration-500 group/post"
+      className="border-b border-white/[0.03] p-6 sm:p-8 hover:bg-white/[0.015] transition-all duration-500 group/post"
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center space-x-3.5">
@@ -500,7 +500,7 @@ const PostCard = ({ post, showVisibility = false }) => {
             <input
               type="text"
               placeholder={replyingTo ? "Write a reply..." : "Write a comment..."}
-              className={`flex-1 bg-dark-900 border border-white/10 px-5 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-dark-800 transition-all shadow-inner ${replyingTo ? 'rounded-b-2xl rounded-t-none' : 'rounded-full'}`}
+              className={`flex-1 bg-white/[0.03] border border-white/[0.08] px-6 py-3.5 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:bg-white/[0.05] transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] backdrop-blur-xl ${replyingTo ? 'rounded-b-2xl rounded-t-none' : 'rounded-full'}`}
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               disabled={isCommenting}

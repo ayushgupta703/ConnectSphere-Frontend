@@ -26,63 +26,68 @@ const Login = () => {
   return (
     <div className="h-screen w-full bg-dark-950 flex overflow-hidden selection:bg-primary-500/30">
       {/* Left Branding Area */}
-      <div className="hidden lg:flex flex-1 flex-col justify-between p-12 bg-dark-900 border-r border-white/5 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary-500/10 to-transparent pointer-events-none" />
-        <div className="absolute -bottom-1/4 -left-1/4 w-3/4 h-3/4 bg-primary-600/10 blur-[120px] rounded-full pointer-events-none" />
+      {/* Left Branding Area */}
+      <div className="hidden lg:flex flex-1 flex-col justify-between p-16 bg-[#080808] border-r border-white/5 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary-500/10 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-primary-600/10 blur-[140px] rounded-full animate-aurora" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-emerald-600/5 blur-[120px] rounded-full animate-aurora [animation-delay:-10s]" />
         
-        <div className="relative z-10 flex items-center gap-3 text-3xl font-black text-gray-100 tracking-tighter">
-          <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)]">
-            <span className="text-white text-2xl">C</span>
+        <div className="relative z-10 flex items-center gap-4 text-4xl font-black text-gray-100 tracking-tighter group">
+          <div className="w-12 h-12 bg-gradient-to-br from-primary-400 to-primary-600 rounded-2xl flex items-center justify-center shadow-glow transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110">
+            <span className="text-white text-3xl">C</span>
           </div>
           ConnectSphere
         </div>
         
-        <div className="relative z-10 max-w-lg">
-          <h1 className="text-5xl font-black text-white leading-tight tracking-tight">
-            Connect with your world.
+        <div className="relative z-10 max-w-xl">
+          <h1 className="text-7xl font-black text-white leading-[1.1] tracking-tight">
+            Connect with <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-emerald-400">your world.</span>
           </h1>
-          <p className="mt-6 text-lg text-gray-400 leading-relaxed">
+          <p className="mt-8 text-xl text-gray-400 leading-relaxed max-w-md font-light">
             Join a vibrant community of creators, thinkers, and explorers. Share your story in a beautifully immersive space today.
           </p>
         </div>
         
-        <div className="relative z-10 text-sm text-gray-600 font-medium">
-          © {new Date().getFullYear()} ConnectSphere. All rights reserved.
+        <div className="relative z-10 text-sm text-gray-600 font-medium tracking-widest uppercase">
+          © {new Date().getFullYear()} ConnectSphere. Crafted for creators.
         </div>
       </div>
 
       {/* Right Form Area */}
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-12 relative overflow-y-auto no-scrollbar bg-dark-950">
-        <div className="absolute top-1/4 right-0 w-1/2 h-1/2 bg-primary-500/5 blur-[100px] rounded-full pointer-events-none" />
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-12 relative overflow-y-auto no-scrollbar bg-[#050505]">
+        <div className="absolute top-1/4 right-0 w-1/2 h-1/2 bg-primary-500/5 blur-[120px] rounded-full pointer-events-none animate-pulse" />
         
-        <div className="max-w-md w-full space-y-8 glass-card p-8 sm:p-10 rounded-3xl shadow-2xl border border-white/10 relative z-10">
-          <div className="text-center">
-            <div className="lg:hidden mx-auto w-12 h-12 bg-primary-500 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)] mb-6">
-              <span className="text-white text-3xl font-black">C</span>
+        <div className="max-w-md w-full space-y-8 glass-card p-10 sm:p-12 rounded-[3rem] shadow-premium relative z-10 group/card">
+          <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none rounded-[3rem]" />
+          
+          <div className="text-center relative z-10">
+            <div className="lg:hidden mx-auto w-16 h-16 bg-gradient-to-br from-primary-400 to-primary-600 rounded-2xl flex items-center justify-center shadow-glow mb-8 transition-transform duration-500 hover:rotate-12">
+              <span className="text-white text-4xl font-black">C</span>
             </div>
-            <h2 className="mt-2 text-3xl font-bold text-gray-100 tracking-tight">
+            <h2 className="text-4xl font-black text-gray-100 tracking-tight">
               Welcome back
             </h2>
-            <p className="mt-2 text-sm text-gray-400">
+            <p className="mt-3 text-base text-gray-400 font-light">
               Sign in to ConnectSphere to see what's happening
             </p>
           </div>
 
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <form className="mt-10 space-y-6 relative z-10" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-500/10 text-red-400 p-3 rounded-xl text-sm text-center border border-red-500/20">
+              <div className="bg-red-500/10 text-red-400 p-4 rounded-2xl text-sm text-center border border-red-500/20 animate-shake">
                 {error}
               </div>
             )}
 
-            <div className="space-y-5">
+            <div className="space-y-6">
               <Input
                 id="email"
                 name="email"
                 type="email"
                 required
-                label="Email"
-                placeholder="Enter your email"
+                label="Email Address"
+                placeholder="name@example.com"
                 value={formData.email}
                 onChange={handleChange}
               />
@@ -93,34 +98,34 @@ const Login = () => {
                 type="password"
                 required
                 label="Password"
-                placeholder="Enter your password"
+                placeholder="••••••••"
                 value={formData.password}
                 onChange={handleChange}
               />
             </div>
 
-            <Button type="submit" className="w-full h-12 text-base font-bold shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)]" isLoading={isLoading}>
+            <Button type="submit" className="w-full h-14 text-lg font-black tracking-wide" isLoading={isLoading}>
               Sign In
             </Button>
           </form>
 
-          <div className="mt-8 relative">
+          <div className="mt-10 relative z-10">
             <div className="absolute inset-0 flex items-center" aria-hidden="true">
               <div className="w-full border-t border-white/5"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-dark-900 text-gray-500 rounded-full border border-white/5 text-xs font-semibold uppercase tracking-wider">Or continue with</span>
+              <span className="px-6 bg-[#0a0a0a] text-gray-500 rounded-full border border-white/5 text-[10px] font-black uppercase tracking-[0.2em]">Or continue with</span>
             </div>
           </div>
 
-          <div className="mt-6">
+          <div className="mt-8 relative z-10">
             <Button
               type="button"
               variant="secondary"
-              className="w-full h-12 gap-3 font-semibold hover:bg-white/5 border border-white/5"
+              className="w-full h-14 gap-4 font-bold hover:bg-white/[0.08] border border-white/10"
               onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/google'}
             >
-              <svg className="h-5 w-5" viewBox="0 0 24 24">
+              <svg className="h-6 w-6" viewBox="0 0 24 24">
                 <path
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                   fill="#4285F4"
@@ -138,14 +143,14 @@ const Login = () => {
                   fill="#EA4335"
                 />
               </svg>
-              Sign in with Google
+              Google
             </Button>
           </div>
 
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-400">
+          <div className="mt-10 text-center relative z-10">
+            <p className="text-sm text-gray-400 font-light">
               Don't have an account?{' '}
-              <Link to="/register" className="font-bold text-primary-400 hover:text-primary-300 transition-colors">
+              <Link to="/register" className="font-black text-primary-400 hover:text-primary-300 transition-all hover:tracking-wide">
                 Sign up
               </Link>
             </p>

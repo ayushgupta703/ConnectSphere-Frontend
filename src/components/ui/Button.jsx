@@ -15,11 +15,11 @@ export const Button = React.forwardRef(({
   ...props 
 }, ref) => {
   const variants = {
-    primary: 'bg-primary-500 text-white hover:bg-primary-400 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] border border-primary-400/50',
-    secondary: 'bg-white/10 text-gray-100 hover:bg-white/20 border border-white/5 backdrop-blur-md',
-    outline: 'border border-white/10 bg-transparent hover:bg-white/5 text-gray-200',
-    ghost: 'bg-transparent hover:bg-white/5 text-gray-300 hover:text-white',
-    danger: 'bg-red-500/80 text-white hover:bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)] border border-red-400/50',
+    primary: 'bg-gradient-to-br from-primary-500 to-emerald-600 text-white hover:from-primary-400 hover:to-emerald-500 shadow-glow hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] border border-white/10 active:scale-[0.98]',
+    secondary: 'bg-white/[0.05] text-gray-100 hover:bg-white/[0.1] border border-white/10 backdrop-blur-xl shadow-premium active:scale-[0.98]',
+    outline: 'border border-white/10 bg-transparent hover:bg-white/5 text-gray-200 hover:border-white/20 active:scale-[0.98]',
+    ghost: 'bg-transparent hover:bg-white/5 text-gray-300 hover:text-white active:scale-[0.98]',
+    danger: 'bg-gradient-to-br from-red-500 to-rose-600 text-white hover:from-red-400 hover:to-rose-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] border border-white/10 active:scale-[0.98]',
   };
 
   const sizes = {

@@ -56,6 +56,7 @@ export const mediaService = {
 
   getActiveStories: async () => {
     try {
+      // const response = await mediaApi.get('/media/stories/active');
       const response = await mediaApi.get('/stories/active');
       return Array.isArray(response.data) ? response.data : [];
     } catch (err) {
@@ -66,6 +67,7 @@ export const mediaService = {
 
   getUserStories: async (userId) => {
     try {
+      // const response = await mediaApi.get(`/media/stories/user/${userId}`);
       const response = await mediaApi.get(`/stories/user/${userId}`);
       return Array.isArray(response.data) ? response.data : [];
     } catch (err) {
@@ -81,6 +83,7 @@ export const mediaService = {
     if (caption) formData.append('caption', caption);
 
     try {
+      // const response = await mediaApi.post('/media/stories', formData);
       const response = await mediaApi.post('/stories', formData);
       return response?.data || null;
     } catch (err) {
@@ -95,6 +98,7 @@ export const mediaService = {
       const user = userJson ? JSON.parse(userJson) : null;
       const userId = user?.id;
       
+      // await mediaApi.post(`/media/stories/${storyId}/view`, { userId: userId });
       await mediaApi.post(`/stories/${storyId}/view`, { userId: userId });
     } catch (err) {
       console.error(`Failed to mark story ${storyId} as viewed:`, err.message);
@@ -103,6 +107,7 @@ export const mediaService = {
 
   deleteStory: async (storyId) => {
     try {
+      // const response = await mediaApi.delete(`/media/stories/${storyId}`);
       const response = await mediaApi.delete(`/stories/${storyId}`);
       return response.data;
     } catch (err) {

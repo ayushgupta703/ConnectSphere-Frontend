@@ -90,7 +90,7 @@ const RightSidebar = () => {
 
   return (
     <>
-      <aside className="hidden xl:flex flex-col w-80 fixed right-8 top-8 bottom-8 space-y-6 overflow-y-auto no-scrollbar pb-8">
+      <aside className="hidden xl:flex flex-col w-80 sticky top-8 h-[calc(100vh-64px)] space-y-6 overflow-y-auto no-scrollbar pb-8">
         {/* Suggested Users */}
         <motion.div 
           initial={{ opacity: 0, x: 20 }}

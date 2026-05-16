@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Plus, X, Loader2, Eye, Trash2 } from 'lucide-react';
 
 import { mediaService } from '../../services/mediaService';
@@ -437,7 +438,7 @@ const StoryBar = () => {
   </div>
 
     {/* Story Viewer Modal */}
-    {activeGroupIndex !== null && activeGroup && currentStory && (
+    {activeGroupIndex !== null && activeGroup && currentStory && createPortal(
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
         {/* Main Content Area (9:16 Aspect Ratio) */}
         <div className="relative w-full max-w-[420px] aspect-[9/16] bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 animate-in zoom-in duration-300">
@@ -527,11 +528,12 @@ const StoryBar = () => {
             </div>
           )}
         </div>
-      </div>
+      </div>,
+      document.body
     )}
 
     {/* Story Upload Preview Modal */}
-    {storyPreviewUrl && (
+    {storyPreviewUrl && createPortal(
       <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
         <div className="relative w-full max-w-[420px] aspect-[9/16] bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 flex flex-col animate-in zoom-in duration-300">
           {/* Header */}
@@ -580,7 +582,8 @@ const StoryBar = () => {
             </button>
           </div>
         </div>
-      </div>
+      </div>,
+      document.body
     )}
   </div>
 

@@ -17,7 +17,7 @@ export const likeService = {
    * @param {string} reactionType - one of ReactionType values (defaults to 'LIKE')
    */
   addReaction: async (postId, reactionType = ReactionType.LIKE) => {
-    const response = await likeApi.post('/reactions', { postId, reactionType });
+    const response = await likeApi.post('/likes/reactions', { postId, reactionType });
     return response.data;
   },
 
@@ -26,7 +26,7 @@ export const likeService = {
    * @param {string} postId
    */
   removeReaction: async (postId) => {
-    const response = await likeApi.delete(`/reactions/${postId}`);
+    const response = await likeApi.delete(`/likes/reactions/${postId}`);
     return response.data;
   },
 
@@ -35,7 +35,7 @@ export const likeService = {
    * @param {string} postId
    */
   getReactionCount: async (postId) => {
-    const response = await likeApi.get(`/reactions/${postId}/count`);
+    const response = await likeApi.get(`/likes/reactions/${postId}/count`);
     return response.data;
   },
 
@@ -44,7 +44,7 @@ export const likeService = {
    * @param {string} postId
    */
   getReactionSummary: async (postId) => {
-    const response = await likeApi.get(`/reactions/${postId}/summary`);
+    const response = await likeApi.get(`/likes/reactions/${postId}/summary`);
     return response.data;
   },
 
@@ -54,7 +54,7 @@ export const likeService = {
    */
   checkReaction: async (postId) => {
     try {
-      const response = await likeApi.get(`/reactions/${postId}/has-reacted`);
+      const response = await likeApi.get(`/likes/reactions/${postId}/has-reacted`);
       return !!response.data; // Ensure boolean
     } catch (err) {
       console.error(`Failed to check reaction for post ${postId}:`, err.message);
